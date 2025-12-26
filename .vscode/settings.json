@@ -1,4 +1,7 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
-    "CodeGPT.apiKey": "CodeGPT Plus Beta"
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  }
 }
