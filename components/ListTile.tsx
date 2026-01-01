@@ -1,4 +1,5 @@
-import React from 'react';
+import { useAppTheme } from '@/contexts/ThemeContext';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type ListTileProps = {
@@ -6,12 +7,26 @@ type ListTileProps = {
   subtitle?: string;
   leading?: React.ReactNode;
   trailing?: React.ReactNode;
+  enablePress?: boolean;
   onPress?: () => void;
 };
 
-const ListTile: React.FC<ListTileProps> = ({ title, subtitle, leading, trailing, onPress }) => {
+const ListTile: React.FC<ListTileProps> = ({
+  title,
+  subtitle,
+  leading,
+  trailing,
+  enablePress = false,
+  onPress,
+}) => {
+  const styles = useStyles();
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={!enablePress}
+    >
       {leading && <View style={styles.leading}>{leading}</View>}
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
@@ -22,33 +37,43 @@ const ListTile: React.FC<ListTileProps> = ({ title, subtitle, leading, trailing,
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
-  },
-  leading: {
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    color: '#222',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  trailing: {
-    marginLeft: 12,
-  },
-});
+// const styles = StyleSheet.create({
+
+// });
+
+const useStyles = () => {
+  const theme = useAppTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 20,
+          backgroundColor: theme.background,
+        },
+        leading: {
+          marginRight: 12,
+        },
+        textContainer: {
+          flex: 1,
+        },
+        title: {
+          fontSize: 16,
+          color: theme.primaryText,
+        },
+        subtitle: {
+          fontSize: 14,
+          color: theme.secondary,
+          marginTop: 2,
+        },
+        trailing: {
+          marginLeft: 12,
+        },
+      }),
+    [theme],
+  );
+  return styles;
+};
 
 export default ListTile;
