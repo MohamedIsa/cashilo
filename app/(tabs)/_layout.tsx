@@ -3,10 +3,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
-
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import React from 'react';
-import { ToastAndroid } from 'react-native';
 
 export default function TabLayout() {
   const theme = useAppTheme();
@@ -39,7 +37,7 @@ export default function TabLayout() {
             size={24}
             color={theme.primary}
             style={{ marginRight: 16 }}
-            onPress={() => ToastAndroid.show('Icon Clicked showing toast', 500)}
+            onPress={() => router.navigate('/(notification)')}
           />
         ),
       }}

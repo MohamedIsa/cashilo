@@ -37,10 +37,6 @@ const ListTile: React.FC<ListTileProps> = ({
   );
 };
 
-// const styles = StyleSheet.create({
-
-// });
-
 const useStyles = () => {
   const theme = useAppTheme();
   const styles = useMemo(
@@ -51,6 +47,8 @@ const useStyles = () => {
           alignItems: 'center',
           padding: 20,
           backgroundColor: theme.background,
+          borderColor: theme.border,
+          borderWidth: 1,
         },
         leading: {
           marginRight: 12,
