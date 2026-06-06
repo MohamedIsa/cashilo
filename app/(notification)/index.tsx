@@ -24,7 +24,7 @@ export default function NotificationScreen() {
           <ListTile
             key={notification.id}
             title={notification.message}
-            trailing={notification.isRead ? '' : <Badge />}
+            trailing={notification.isRead ? undefined : <Badge />}
           />
         </View>
       ))}

@@ -31,7 +31,34 @@ export async function setLanguage(language: Language): Promise<void> {
   });
 }
 
+export async function getCurrency(): Promise<string> {
+  const realm = await getRealm();
+  const setting = realm
+    .objects<SettingsSchema>('Settings')
+    .filtered('key == $0', 'currency')[0];
+  return setting?.value ?? 'USD';
+}
+
+export async function setCurrency(currency: string): Promise<void> {
+  const realm = await getRealm();
+  const existing = realm
+    .objects<SettingsSchema>('Settings')
+    .filtered('key == $0', 'currency')[0];
+  realm.write(() => {
+    if (existing) {
+      existing.value = currency;
+    } else {
+      realm.create('Settings', {
+        _id: new Realm.BSON.ObjectId(),
+        key: 'currency',
+        value: currency,
+      });
+    }
+  });
+}
+
 export async function clearAllData(): Promise<void> {
   const realm = await getRealm();
   realm.write(() => realm.deleteAll());
 }
+

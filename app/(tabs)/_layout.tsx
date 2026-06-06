@@ -46,6 +46,7 @@ export default function TabLayout() {
         name="Dashboard"
         options={{
           title: 'Dashboard',
+          headerShown: false, // Dashboard renders its own custom header
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
               name="dashboard"

@@ -1,0 +1,14 @@
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cashiloGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E5631;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A3D9B1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <path d="M380 150C350 100 280 70 220 70C120 70 40 150 40 250C40 350 120 430 220 430C300 430 365 380 390 310" 
+        stroke="url(#cashiloGradient)" stroke-width="45" stroke-linecap="round" fill="none"/>
+  
+  <path d="M220 340C170 340 130 300 130 250C130 215 150 185 180 170" 
+        stroke="url(#cashiloGradient)" stroke-width="35" stroke-linecap="round" fill="none"/>
+</svg>
