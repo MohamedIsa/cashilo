@@ -60,7 +60,7 @@ const EditTransactionModal: React.FC<Props> = ({ visible, transaction, onClose, 
     }
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
-      Alert.alert('', 'Please enter a valid date (YYYY-MM-DD).');
+      Alert.alert('', t('enterValidDate'));
       return;
     }
     onSave({
@@ -170,11 +170,11 @@ const EditTransactionModal: React.FC<Props> = ({ visible, transaction, onClose, 
             />
 
             {/* Note */}
-            <Text style={labelStyle(theme)}>Note</Text>
+            <Text style={labelStyle(theme)}>{t('note')}</Text>
             <TextInput
               value={note}
               onChangeText={setNote}
-              placeholder="Optional note..."
+              placeholder={t('optionalNote')}
               placeholderTextColor={`${theme.primaryText}66`}
               style={[inputStyle(theme), { marginBottom: 20 }]}
             />

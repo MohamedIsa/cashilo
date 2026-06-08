@@ -1,3 +1,4 @@
+import { radius, shadow, spacing, typography, withAlpha } from '@/contants/theme';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Transaction } from '@/model/Transaction';
 import { getCurrency, getTransactions } from '@/storage';
@@ -5,19 +6,16 @@ import { EXPENSE_CATEGORIES_EN, EXPENSE_CATEGORY_COLORS, INCOME_CATEGORIES_EN, I
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
+    Pressable,
     ScrollView,
     Text,
-    TouchableOpacity,
+    useWindowDimensions,
     View,
 } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
-
-const SCREEN_W = Dimensions.get('window').width;
-const CHART_W = SCREEN_W - 32;
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type RangeKey = 'today' | 'lastWeek' | 'lastMonth' | 'last6Months' | 'lastYear';
-
 const RANGES: RangeKey[] = ['today', 'lastWeek', 'lastMonth', 'last6Months', 'lastYear'];
 
 function filterByRange(transactions: Transaction[], range: RangeKey): Transaction[] {
@@ -40,8 +38,8 @@ function groupByMonth(transactions: Transaction[]): Record<string, { income: num
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (!result[key]) result[key] = { income: 0, expenses: 0, saving: 0 };
     if (t.type === 'Income') result[key].income += t.amount;
-    else if (t.type === 'Expense') result[key].expenses += t.amount;
-    else if (t.type === 'Saving') result[key].saving += t.amount;
+    else if (t.category === 'Saving') result[key].saving += t.amount;
+    else result[key].expenses += t.amount;
   });
   return result;
 }
@@ -60,6 +58,9 @@ function buildCategoryPie(transactions: Transaction[], type: 'Income' | 'Expense
 export default function Reports() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const chartWidth = width - spacing.lg * 2;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currency, setCurrencySymbol] = useState('$');
@@ -77,7 +78,7 @@ export default function Reports() {
   const filtered = filterByRange(transactions, range);
   const totalIncome = filtered.filter((t) => t.type === 'Income').reduce((s, t) => s + t.amount, 0);
   const totalExpenses = filtered.filter((t) => t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
-  const totalSaving = filtered.filter((t) => t.type === 'Saving').reduce((s, t) => s + t.amount, 0);
+  const totalSaving = filtered.filter((t) => t.category === 'Saving').reduce((s, t) => s + t.amount, 0);
 
   const overviewPie = [
     { name: t('income'), population: totalIncome, color: theme.secondary, legendFontColor: theme.primaryText, legendFontSize: 12 },
@@ -88,10 +89,9 @@ export default function Reports() {
   const incomePie = buildCategoryPie(filtered, 'Income', INCOME_CATEGORIES_EN, INCOME_CATEGORY_COLORS);
   const expensePie = buildCategoryPie(filtered, 'Expense', EXPENSE_CATEGORIES_EN, EXPENSE_CATEGORY_COLORS);
 
-  // Monthly bar chart – last 6 months
   const monthlyData = groupByMonth(transactions);
   const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
-  const barLabels = sortedMonths.map((m) => m.slice(5)); // MM
+  const barLabels = sortedMonths.map((m) => m.slice(5));
   const barIncomeData = sortedMonths.map((m) => monthlyData[m].income);
   const barExpenseData = sortedMonths.map((m) => monthlyData[m].expenses);
 
@@ -101,50 +101,63 @@ export default function Reports() {
     decimalPlaces: 0,
     color: (opacity = 1) => theme.primary + Math.round(opacity * 255).toString(16).padStart(2, '0'),
     labelColor: () => theme.primaryText,
-    style: { borderRadius: 12 },
+    style: { borderRadius: radius.md },
     propsForDots: { r: '4', strokeWidth: '2', stroke: theme.primary },
   };
 
   const monthBreakdown = Object.entries(groupByMonth(filtered)).sort(([a], [b]) => b.localeCompare(a));
-
   const noData = filtered.length === 0;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={{ color: theme.headline, fontWeight: 'bold', fontSize: 24, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-        {t('overview')}
-      </Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
+      contentInsetAdjustmentBehavior="automatic"
+    >
+      <View style={{ paddingHorizontal: spacing.lg, paddingTop: insets.top + spacing.md }}>
+        <Text style={{ color: theme.headline, ...typography.display, marginBottom: spacing.xl }}>
+          {t('overview')}
+        </Text>
+      </View>
 
-      {/* Range Selector */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 8 }}>
-        {RANGES.map((r) => (
-          <TouchableOpacity
-            key={r}
-            onPress={() => setRange(r)}
-            style={{
-              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-              backgroundColor: range === r ? theme.primary : theme.card,
-            }}
-          >
-            <Text style={{ color: range === r ? '#fff' : theme.primaryText, fontWeight: range === r ? 'bold' : '400', fontSize: 13 }}>
-              {t(r)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Range selector */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: spacing.sm, paddingBottom: spacing.md }}
+      >
+        {RANGES.map((r) => {
+          const active = range === r;
+          return (
+            <Pressable
+              key={r}
+              onPress={() => setRange(r)}
+              style={{
+                paddingHorizontal: spacing.lg,
+                paddingVertical: spacing.sm,
+                borderRadius: radius.pill,
+                backgroundColor: active ? theme.primary : theme.card,
+              }}
+            >
+              <Text style={{ color: active ? '#fff' : theme.primaryText, ...typography.label, fontWeight: active ? '700' : '400' }}>
+                {t(r)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
       {noData ? (
         <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-          <Text style={{ color: theme.primaryText, fontSize: 16 }}>{t('noData')}</Text>
+          <Text style={{ color: withAlpha(theme.primaryText, 0.5), ...typography.body }}>{t('noData')}</Text>
         </View>
       ) : (
-        <>
-          {/* Overview Pie */}
+        <View style={{ paddingHorizontal: spacing.lg, gap: spacing.lg }}>
           {overviewPie.length > 0 && (
             <SectionCard title={t('incomeExpensesSaving')} theme={theme}>
               <PieChart
                 data={overviewPie}
-                width={CHART_W}
+                width={chartWidth}
                 height={180}
                 chartConfig={chartConfig}
                 accessor="population"
@@ -155,7 +168,6 @@ export default function Reports() {
             </SectionCard>
           )}
 
-          {/* Monthly Bar Chart */}
           {sortedMonths.length > 0 && (
             <SectionCard title={t('monthlyIncomeExpenses')} theme={theme}>
               <BarChart
@@ -165,26 +177,24 @@ export default function Reports() {
                     { data: barIncomeData.length > 0 ? barIncomeData : [0], color: () => theme.secondary },
                     { data: barExpenseData.length > 0 ? barExpenseData : [0], color: () => theme.error },
                   ],
-                  legend: [t('income'), t('expenses')],
                 }}
-                width={CHART_W}
+                width={chartWidth}
                 height={220}
                 chartConfig={chartConfig}
                 yAxisLabel={currency}
                 yAxisSuffix=""
                 fromZero
                 showBarTops
-                style={{ borderRadius: 12 }}
+                style={{ borderRadius: radius.md }}
               />
             </SectionCard>
           )}
 
-          {/* Income Breakdown Pie */}
           {incomePie.length > 0 && (
             <SectionCard title={t('incomeBreakdown')} theme={theme}>
               <PieChart
                 data={incomePie}
-                width={CHART_W}
+                width={chartWidth}
                 height={180}
                 chartConfig={chartConfig}
                 accessor="population"
@@ -195,12 +205,11 @@ export default function Reports() {
             </SectionCard>
           )}
 
-          {/* Expense Breakdown Pie */}
           {expensePie.length > 0 && (
             <SectionCard title={t('expenseBreakdown')} theme={theme}>
               <PieChart
                 data={expensePie}
-                width={CHART_W}
+                width={chartWidth}
                 height={180}
                 chartConfig={chartConfig}
                 accessor="population"
@@ -211,12 +220,19 @@ export default function Reports() {
             </SectionCard>
           )}
 
-          {/* Monthly Breakdown List */}
           {monthBreakdown.length > 0 && (
             <SectionCard title={t('monthlyBreakdown')} theme={theme}>
               {monthBreakdown.map(([month, data]) => (
-                <View key={month} style={{ marginBottom: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: `${theme.primaryText}22` }}>
-                  <Text style={{ color: theme.headline, fontWeight: 'bold', marginBottom: 6 }}>{month}</Text>
+                <View
+                  key={month}
+                  style={{
+                    marginBottom: spacing.sm,
+                    paddingVertical: spacing.sm,
+                    borderBottomWidth: 1,
+                    borderBottomColor: withAlpha(theme.primaryText, 0.08),
+                  }}
+                >
+                  <Text style={{ color: theme.headline, ...typography.label, marginBottom: spacing.sm }}>{month}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <MonthStat label={t('income')} amount={data.income} color={theme.secondary} currency={currency} />
                     <MonthStat label={t('expenses')} amount={data.expenses} color={theme.error} currency={currency} />
@@ -226,7 +242,7 @@ export default function Reports() {
               ))}
             </SectionCard>
           )}
-        </>
+        </View>
       )}
     </ScrollView>
   );
@@ -234,13 +250,15 @@ export default function Reports() {
 
 function SectionCard({ title, children, theme }: { title: string; children: React.ReactNode; theme: any }) {
   return (
-    <View style={{
-      marginHorizontal: 16, marginTop: 16, borderRadius: 18,
-      backgroundColor: theme.card,
-      padding: 16,
-      shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
-    }}>
-      <Text style={{ color: theme.headline, fontWeight: 'bold', fontSize: 15, marginBottom: 12 }}>{title}</Text>
+    <View
+      style={{
+        borderRadius: radius.lg,
+        backgroundColor: theme.card,
+        padding: spacing.lg,
+        ...shadow.sm,
+      }}
+    >
+      <Text style={{ color: theme.headline, ...typography.heading, marginBottom: spacing.md }}>{title}</Text>
       {children}
     </View>
   );
@@ -249,8 +267,10 @@ function SectionCard({ title, children, theme }: { title: string; children: Reac
 function MonthStat({ label, amount, color, currency }: { label: string; amount: number; color: string; currency: string }) {
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text style={{ color, fontWeight: 'bold', fontSize: 14 }}>{currency}{amount.toFixed(2)}</Text>
-      <Text style={{ color: '#888', fontSize: 11, marginTop: 2 }}>{label}</Text>
+      <Text style={{ color, ...typography.label, fontVariant: ['tabular-nums'] }} selectable>
+        {currency}{amount.toFixed(2)}
+      </Text>
+      <Text style={{ color: '#888', ...typography.caption, marginTop: 2 }}>{label}</Text>
     </View>
   );
 }

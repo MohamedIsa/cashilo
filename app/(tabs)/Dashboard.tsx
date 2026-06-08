@@ -16,6 +16,7 @@ import {
 import { calculateGoalSavings, getTotalPeriodSavingGoal } from '@/utils/goalUtils';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -191,21 +192,36 @@ function Dashboard() {
               {monthYear}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.navigate('/(notification)')}
-            hitSlop={10}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: radius.pill,
-              backgroundColor: theme.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              ...shadow.sm,
-            }}
-          >
-            <Octicons name="bell" size={20} color={theme.primary} />
-          </TouchableOpacity>
+          {isLiquidGlassAvailable() ? (
+            <GlassView
+              isInteractive
+              style={{ width: 44, height: 44, borderRadius: radius.pill, overflow: 'hidden' }}
+            >
+              <TouchableOpacity
+                onPress={() => router.navigate('/(notification)')}
+                hitSlop={10}
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Octicons name="bell" size={20} color={theme.primary} />
+              </TouchableOpacity>
+            </GlassView>
+          ) : (
+            <TouchableOpacity
+              onPress={() => router.navigate('/(notification)')}
+              hitSlop={10}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: radius.pill,
+                backgroundColor: theme.card,
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...shadow.sm,
+              }}
+            >
+              <Octicons name="bell" size={20} color={theme.primary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Hero balance card */}
@@ -215,8 +231,7 @@ function Dashboard() {
             borderRadius: radius.xl,
             padding: spacing.xxl,
             marginBottom: spacing.xl,
-            ...shadow.lg,
-            shadowColor: theme.primary,
+            boxShadow: '0 8px 24px rgba(0, 184, 217, 0.35)',
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
@@ -226,21 +241,39 @@ function Dashboard() {
           <Text style={{ color: '#FFFFFF', fontSize: 38, fontWeight: '800', letterSpacing: 0.5, marginBottom: spacing.xl }}>
             {currency}{balance.toFixed(2)}
           </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: withAlpha('#FFFFFF', 0.15),
-              borderRadius: radius.md,
-              padding: spacing.lg,
-              gap: spacing.md,
-            }}
-          >
-            <HeroStat icon="attach-money" label={t('income')} amount={totalIncome} />
-            <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.25) }} />
-            <HeroStat icon="money-off" label={t('expense')} amount={totalExpenses} />
-            <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.25) }} />
-            <HeroStat icon="savings" label={t('saving')} amount={savings} />
-          </View>
+          {isLiquidGlassAvailable() ? (
+            <GlassView
+              style={{
+                borderRadius: radius.md,
+                overflow: 'hidden',
+                flexDirection: 'row',
+                padding: spacing.lg,
+                gap: spacing.md,
+              }}
+            >
+              <HeroStat icon="attach-money" label={t('income')} amount={totalIncome} />
+              <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.35) }} />
+              <HeroStat icon="money-off" label={t('expense')} amount={totalExpenses} />
+              <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.35) }} />
+              <HeroStat icon="savings" label={t('saving')} amount={savings} />
+            </GlassView>
+          ) : (
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: withAlpha('#FFFFFF', 0.15),
+                borderRadius: radius.md,
+                padding: spacing.lg,
+                gap: spacing.md,
+              }}
+            >
+              <HeroStat icon="attach-money" label={t('income')} amount={totalIncome} />
+              <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.25) }} />
+              <HeroStat icon="money-off" label={t('expense')} amount={totalExpenses} />
+              <View style={{ width: 1, backgroundColor: withAlpha('#FFFFFF', 0.25) }} />
+              <HeroStat icon="savings" label={t('saving')} amount={savings} />
+            </View>
+          )}
         </View>
 
         {/* Monthly Saving Goal Progress */}
@@ -319,7 +352,7 @@ function Dashboard() {
             style={{
               flex: 1, backgroundColor: theme.primary, borderRadius: radius.lg, paddingVertical: spacing.lg,
               alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: spacing.sm,
-              ...shadow.md, shadowColor: theme.primary,
+              boxShadow: '0 4px 12px rgba(0, 184, 217, 0.30)',
             }}
           >
             <MaterialIcons name="add" size={20} color="#fff" />
@@ -349,7 +382,7 @@ function Dashboard() {
           position: 'absolute', bottom: 24, right: 24,
           width: 56, height: 56, borderRadius: radius.pill, backgroundColor: theme.primary,
           justifyContent: 'center', alignItems: 'center',
-          ...shadow.lg, shadowColor: theme.primary,
+          boxShadow: '0 6px 20px rgba(0, 184, 217, 0.35)',
         }}
       >
         <MaterialIcons name="add" size={28} color="#fff" />

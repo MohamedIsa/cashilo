@@ -21,7 +21,12 @@ type Props = {
   onSave: (updated: Goal) => void;
 };
 
-const PERIODS = ['1 Month', '3 Months', '6 Months', '1 Year'];
+const PERIODS: { key: string; i18nKey: string }[] = [
+  { key: '1 Month',   i18nKey: 'period1Month'  },
+  { key: '3 Months',  i18nKey: 'period3Months' },
+  { key: '6 Months',  i18nKey: 'period6Months' },
+  { key: '1 Year',    i18nKey: 'period1Year'   },
+];
 
 const EditGoalModal: React.FC<Props> = ({ visible, goal, onClose, onSave }) => {
   const theme = useAppTheme();
@@ -29,7 +34,7 @@ const EditGoalModal: React.FC<Props> = ({ visible, goal, onClose, onSave }) => {
 
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
-  const [period, setPeriod] = useState('1 Month');
+  const [period, setPeriod] = useState(PERIODS[0].key);
 
   useEffect(() => {
     if (goal) {
@@ -41,7 +46,7 @@ const EditGoalModal: React.FC<Props> = ({ visible, goal, onClose, onSave }) => {
   const handleSave = () => {
     if (!goal) return;
     if (!name.trim()) {
-      Alert.alert('', 'Please enter a goal name.');
+      Alert.alert('', t('enterGoalName'));
       return;
     }
     const parsed = parseFloat(targetAmount);
@@ -100,19 +105,19 @@ const EditGoalModal: React.FC<Props> = ({ visible, goal, onClose, onSave }) => {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
             {PERIODS.map((p) => (
               <TouchableOpacity
-                key={p}
-                onPress={() => setPeriod(p)}
+                key={p.key}
+                onPress={() => setPeriod(p.key)}
                 style={{
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   borderRadius: 20,
                   borderWidth: 2,
-                  borderColor: period === p ? theme.primary : `${theme.primaryText}33`,
-                  backgroundColor: period === p ? `${theme.primary}1A` : theme.card,
+                  borderColor: period === p.key ? theme.primary : `${theme.primaryText}33`,
+                  backgroundColor: period === p.key ? `${theme.primary}1A` : theme.card,
                 }}
               >
-                <Text style={{ color: period === p ? theme.primary : theme.primaryText, fontSize: 13, fontWeight: '600' }}>
-                  {p}
+                <Text style={{ color: period === p.key ? theme.primary : theme.primaryText, fontSize: 13, fontWeight: '600' }}>
+                  {t(p.i18nKey)}
                 </Text>
               </TouchableOpacity>
             ))}

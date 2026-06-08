@@ -1,3 +1,4 @@
+import { radius, shadow, spacing, typography } from '@/contants/theme';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Transaction } from '@/model/Transaction';
 import { getLocalizedCategory } from '@/utils/categories';
@@ -34,69 +35,48 @@ const TransactionTile: React.FC<TransactionTileProps> = ({ transaction, currency
     <View
       style={{
         backgroundColor: theme.card,
-        borderRadius: 14,
-        marginHorizontal: 0,
-        marginVertical: 6,
-        padding: 14,
+        borderRadius: radius.md,
+        marginVertical: spacing.xs,
+        padding: spacing.md,
         flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        ...shadow.sm,
       }}
     >
-      {/* Leading icon */}
       <View
         style={{
           width: 40,
           height: 40,
-          borderRadius: 20,
-          backgroundColor: `${theme.primary}1A`,
+          borderRadius: radius.pill,
+          backgroundColor: `${isIncome ? theme.secondary : theme.error}1A`,
           justifyContent: 'center',
           alignItems: 'center',
-          marginRight: 12,
+          marginRight: spacing.md,
         }}
       >
         <MaterialIcons
           name={isIncome ? 'arrow-downward' : 'arrow-upward'}
           size={20}
-          color={theme.primary}
+          color={isIncome ? theme.secondary : theme.error}
         />
       </View>
 
-      {/* Content */}
       <View style={{ flex: 1 }}>
-        <Text
-          style={{ color: theme.primaryText, fontWeight: '600', fontSize: 15 }}
-          numberOfLines={1}
-        >
+        <Text style={{ color: theme.primaryText, ...typography.label }} numberOfLines={1}>
           {localizedCategory}
         </Text>
-        <Text
-          style={{ color: theme.primaryText, fontSize: 12, marginTop: 2, opacity: 0.7 }}
-          numberOfLines={2}
-        >
+        <Text style={{ color: theme.primaryText, ...typography.caption, marginTop: 2, opacity: 0.65 }} numberOfLines={2}>
           {formatDate(transaction.date)}
           {transaction.note ? ` • ${transaction.note}` : ''}
         </Text>
       </View>
 
-      {/* Trailing */}
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <Text style={{ color: amountColor, fontWeight: 'bold', fontSize: 16 }}>
+      <View style={{ alignItems: 'flex-end', gap: spacing.xs }}>
+        <Text style={{ color: amountColor, ...typography.heading, fontVariant: ['tabular-nums'] }} selectable>
           {prefix}{currency}{Math.abs(transaction.amount).toFixed(2)}
         </Text>
-        <View
-          style={{
-            backgroundColor: chipBg,
-            borderRadius: 12,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-          }}
-        >
-          <Text style={{ color: chipText, fontSize: 11, fontWeight: '600' }}>
+        <View style={{ backgroundColor: chipBg, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 3 }}>
+          <Text style={{ color: chipText, ...typography.caption, fontWeight: '600' }}>
             {isIncome ? t('income') : t('expense')}
           </Text>
         </View>

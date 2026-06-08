@@ -1,3 +1,4 @@
+import { radius, shadow, spacing, typography, withAlpha } from '@/contants/theme';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Goal } from '@/model/Goal';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -27,82 +28,88 @@ const GoalCard: React.FC<GoalCardProps> = ({
   const theme = useAppTheme();
   const { t } = useTranslation();
   const percent = Math.min(goal.savedAmount / goal.targetAmount, 1);
-  const bgColor = completed ? `${theme.secondary}1F` : theme.card;
+  const accentColor = completed ? theme.secondary : theme.primary;
 
   return (
     <View
       style={{
-        backgroundColor: bgColor,
-        borderRadius: 16,
-        padding: 16,
-        marginVertical: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
+        backgroundColor: completed ? withAlpha(theme.secondary, 0.08) : theme.card,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
+        marginVertical: spacing.sm,
+        ...shadow.sm,
+        borderWidth: completed ? 1 : 0,
+        borderColor: completed ? withAlpha(theme.secondary, 0.25) : undefined,
       }}
     >
       {/* Header row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-        <MaterialIcons
-          name={completed ? 'emoji-events' : 'flag'}
-          size={28}
-          color={completed ? theme.secondary : theme.primary}
-          style={{ marginRight: 10 }}
-        />
-        <Text
-          style={{ flex: 1, color: theme.headline, fontWeight: 'bold', fontSize: 16 }}
-          numberOfLines={1}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.sm }}>
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: radius.pill,
+            backgroundColor: withAlpha(accentColor, 0.12),
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         >
+          <MaterialIcons
+            name={completed ? 'emoji-events' : 'flag'}
+            size={22}
+            color={accentColor}
+          />
+        </View>
+
+        <Text style={{ flex: 1, color: theme.headline, ...typography.heading }} numberOfLines={1}>
           {goal.name}
         </Text>
 
-        {onEdit && (
-          <TouchableOpacity onPress={onEdit} style={{ padding: 4 }}>
-            <MaterialIcons name="edit" size={20} color={theme.primary} />
-          </TouchableOpacity>
-        )}
-        {onDelete && (
-          <TouchableOpacity onPress={onDelete} style={{ padding: 4 }}>
-            <MaterialIcons name="delete" size={20} color={theme.error} />
-          </TouchableOpacity>
-        )}
-        {onStopChanged && (
-          <TouchableOpacity
-            onPress={() => onStopChanged(!goal.stopped)}
-            style={{
-              width: 24,
-              height: 24,
-              borderRadius: 4,
-              borderWidth: 2,
-              borderColor: goal.stopped ? theme.primary : theme.primary,
-              backgroundColor: goal.stopped ? theme.primary : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 4,
-            }}
-          >
-            {goal.stopped && (
-              <MaterialIcons name="check" size={16} color="#fff" />
-            )}
-          </TouchableOpacity>
-        )}
-        {onReactivate && (
-          <TouchableOpacity onPress={onReactivate} style={{ padding: 4 }}>
-            <MaterialIcons name="refresh" size={22} color={theme.secondary} />
-          </TouchableOpacity>
-        )}
+        <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+          {onEdit && (
+            <TouchableOpacity onPress={onEdit} hitSlop={8} style={{ padding: spacing.xs }}>
+              <MaterialIcons name="edit" size={20} color={theme.primary} />
+            </TouchableOpacity>
+          )}
+          {onDelete && (
+            <TouchableOpacity onPress={onDelete} hitSlop={8} style={{ padding: spacing.xs }}>
+              <MaterialIcons name="delete-outline" size={20} color={theme.error} />
+            </TouchableOpacity>
+          )}
+          {onStopChanged && (
+            <TouchableOpacity
+              onPress={() => onStopChanged(!goal.stopped)}
+              hitSlop={8}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: radius.sm,
+                borderWidth: 2,
+                borderColor: theme.primary,
+                backgroundColor: goal.stopped ? theme.primary : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {goal.stopped && <MaterialIcons name="check" size={14} color="#fff" />}
+            </TouchableOpacity>
+          )}
+          {onReactivate && (
+            <TouchableOpacity onPress={onReactivate} hitSlop={8} style={{ padding: spacing.xs }}>
+              <MaterialIcons name="refresh" size={22} color={theme.secondary} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Progress bar */}
       <View
         style={{
-          height: 18,
-          backgroundColor: `${theme.primary}22`,
-          borderRadius: 9,
+          height: 10,
+          backgroundColor: withAlpha(accentColor, 0.15),
+          borderRadius: radius.pill,
           overflow: 'hidden',
-          marginBottom: 12,
+          marginBottom: spacing.sm,
         }}
       >
         <View
@@ -112,34 +119,25 @@ const GoalCard: React.FC<GoalCardProps> = ({
             top: 0,
             bottom: 0,
             width: `${percent * 100}%`,
-            backgroundColor: theme.primary,
-            borderRadius: 9,
+            backgroundColor: accentColor,
+            borderRadius: radius.pill,
           }}
         />
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: theme.primaryText, fontWeight: 'bold', fontSize: 11 }}>
-            {(percent * 100).toFixed(0)}%
-          </Text>
-        </View>
       </View>
 
-      {/* Amounts */}
-      <Text style={{ color: theme.primaryText, fontWeight: '500', fontSize: 14 }}>
-        {t('saved')}: {currency}{goal.savedAmount.toFixed(2)} / {currency}{goal.targetAmount.toFixed(2)}
-      </Text>
+      {/* Amounts + percent */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ color: theme.primaryText, ...typography.body }} selectable>
+          {currency}{goal.savedAmount.toFixed(2)}
+          <Text style={{ opacity: 0.5 }}> / {currency}{goal.targetAmount.toFixed(2)}</Text>
+        </Text>
+        <Text style={{ color: accentColor, ...typography.label }}>
+          {(percent * 100).toFixed(0)}%
+        </Text>
+      </View>
 
       {completed && (
-        <Text style={{ color: theme.secondary, fontWeight: 'bold', marginTop: 6 }}>
+        <Text style={{ color: theme.secondary, ...typography.label, marginTop: spacing.sm }}>
           {t('goalCompleted')}
         </Text>
       )}

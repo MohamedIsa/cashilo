@@ -1,14 +1,53 @@
-<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cashiloGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1E5631;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#A3D9B1;stop-opacity:1" />
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00D4F5"/>
+      <stop offset="100%" stop-color="#0080A0"/>
+    </linearGradient>
+    <linearGradient id="coinGrad" x1="312" y1="272" x2="396" y2="368" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00D4F5"/>
+      <stop offset="100%" stop-color="#0080A0"/>
     </linearGradient>
   </defs>
 
-  <path d="M380 150C350 100 280 70 220 70C120 70 40 150 40 250C40 350 120 430 220 430C300 430 365 380 390 310" 
-        stroke="url(#cashiloGradient)" stroke-width="45" stroke-linecap="round" fill="none"/>
-  
-  <path d="M220 340C170 340 130 300 130 250C130 215 150 185 180 170" 
-        stroke="url(#cashiloGradient)" stroke-width="35" stroke-linecap="round" fill="none"/>
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+
+  <!-- Wallet body (lower section) -->
+  <rect x="76" y="172" width="360" height="228" rx="36" fill="white" fill-opacity="0.95"/>
+
+  <!-- Wallet card top flap -->
+  <rect x="76" y="172" width="360" height="108" rx="36" fill="white"/>
+  <!-- Bridge fill between flap corners and body -->
+  <rect x="76" y="244" width="360" height="36" fill="white"/>
+
+  <!-- Card chip (top left of card area) -->
+  <rect x="116" y="198" width="44" height="32" rx="8" fill="#B2EAF5" fill-opacity="0.7"/>
+  <rect x="122" y="204" width="12" height="8" rx="2" fill="#00B8D9" fill-opacity="0.5"/>
+  <rect x="138" y="204" width="14" height="8" rx="2" fill="#00B8D9" fill-opacity="0.5"/>
+  <rect x="122" y="216" width="30" height="8" rx="2" fill="#00B8D9" fill-opacity="0.3"/>
+
+  <!-- Card number dots -->
+  <circle cx="192" cy="232" r="5" fill="#00B8D9" fill-opacity="0.3"/>
+  <circle cx="208" cy="232" r="5" fill="#00B8D9" fill-opacity="0.3"/>
+  <circle cx="224" cy="232" r="5" fill="#00B8D9" fill-opacity="0.3"/>
+  <circle cx="240" cy="232" r="5" fill="#00B8D9" fill-opacity="0.3"/>
+
+  <!-- Coin pocket (right side of lower section) -->
+  <rect x="296" y="268" width="116" height="104" rx="24" fill="#E0F7FC"/>
+
+  <!-- Coin outer ring -->
+  <circle cx="354" cy="320" r="36" fill="url(#coinGrad)" fill-opacity="0.2"/>
+  <!-- Coin inner -->
+  <circle cx="354" cy="320" r="26" fill="url(#coinGrad)" fill-opacity="0.4"/>
+
+  <!-- Coin currency mark (vertical bar + two horizontal bars) -->
+  <rect x="351" y="306" width="6" height="28" rx="3" fill="#006B85"/>
+  <rect x="340" y="312" width="28" height="5" rx="2.5" fill="#006B85"/>
+  <rect x="340" y="323" width="28" height="5" rx="2.5" fill="#006B85"/>
+
+  <!-- Bills / cards stacked hint (left side of lower section) -->
+  <rect x="108" y="284" width="156" height="14" rx="7" fill="#B2EAF5" fill-opacity="0.6"/>
+  <rect x="108" y="306" width="120" height="14" rx="7" fill="#B2EAF5" fill-opacity="0.4"/>
+  <rect x="108" y="328" width="140" height="14" rx="7" fill="#B2EAF5" fill-opacity="0.3"/>
 </svg>

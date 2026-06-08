@@ -7,7 +7,6 @@
     "icon": "./assets/images/logo.png",
     "scheme": "cashilo",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mohamedisa.cashilo"
@@ -18,7 +17,6 @@
         "backgroundColor": "#ffffff",
         "monochromeImage": "./assets/images/logo.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.mohamedisa.cashilo"
     },
@@ -43,7 +41,8 @@
       ],
       "expo-font",
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

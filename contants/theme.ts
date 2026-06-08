@@ -78,29 +78,11 @@ export const typography = {
   caption: { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
 } as const;
 
-/** Elevation presets (iOS shadow + Android elevation). */
+/** Elevation presets using CSS boxShadow (New Architecture). */
 export const shadow = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 16,
-    elevation: 8,
-  },
+  sm: { boxShadow: '0 1px 4px rgba(0, 0, 0, 0.06)' },
+  md: { boxShadow: '0 3px 8px rgba(0, 0, 0, 0.10)' },
+  lg: { boxShadow: '0 6px 16px rgba(0, 0, 0, 0.14)' },
 } as const;
 
 /**

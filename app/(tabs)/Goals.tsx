@@ -1,6 +1,7 @@
 import GoalCard from '@/components/GoalCard';
 import AddGoalModal from '@/components/modals/AddGoalModal';
 import EditGoalModal from '@/components/modals/EditGoalModal';
+import { radius, spacing, typography, withAlpha } from '@/contants/theme';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Goal } from '@/model/Goal';
 import { addGoal, addTransaction, deleteGoal, getCurrency, getGoals, updateGoal } from '@/storage';
@@ -10,16 +11,19 @@ import { useTranslation } from 'react-i18next';
 import {
     Alert,
     FlatList,
+    Pressable,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TabType = 'active' | 'done';
 
 export default function Goals() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const [goals, setGoals] = useState<Goal[]>([]);
   const [currency, setCurrencySymbol] = useState('$');
@@ -40,15 +44,7 @@ export default function Goals() {
   const doneOrStoppedGoals = goals.filter((g) => g.stopped || g.savedAmount >= g.targetAmount);
 
   const handleAddGoal = async (name: string, targetAmount: number, startDate: Date, endDate: Date) => {
-    await addGoal({
-      id: Date.now().toString(),
-      name,
-      targetAmount,
-      savedAmount: 0,
-      startDate,
-      endDate,
-      stopped: false,
-    });
+    await addGoal({ id: Date.now().toString(), name, targetAmount, savedAmount: 0, startDate, endDate, stopped: false });
     loadData();
   };
 
@@ -59,22 +55,14 @@ export default function Goals() {
   };
 
   const handleDeleteGoal = (goal: Goal) => {
-    Alert.alert(t('deleteConfirmTitle'), `Delete goal "${goal.name}"?`, [
+    Alert.alert(t('deleteConfirmTitle'), `${t('delete')} "${goal.name}"?`, [
       { text: t('cancel'), style: 'cancel' },
       {
         text: t('delete'),
         style: 'destructive',
         onPress: async () => {
-          // Return saved amount as income if any
           if (goal.savedAmount > 0) {
-            await addTransaction({
-              id: Date.now().toString(),
-              type: 'Income',
-              amount: goal.savedAmount,
-              category: 'From Saving',
-              date: new Date(),
-              note: `Goal deleted: ${goal.name}`,
-            });
+            await addTransaction({ id: Date.now().toString(), type: 'Income', amount: goal.savedAmount, category: 'From Saving', date: new Date(), note: `Goal deleted: ${goal.name}` });
           }
           await deleteGoal(goal.id);
           loadData();
@@ -86,14 +74,7 @@ export default function Goals() {
   const handleStopGoal = async (goal: Goal, stopped: boolean) => {
     if (stopped && !goal.stopped) {
       if (goal.savedAmount > 0) {
-        await addTransaction({
-          id: Date.now().toString(),
-          type: 'Income',
-          amount: goal.savedAmount,
-          category: 'From Saving',
-          date: new Date(),
-          note: `Stopped goal: ${goal.name}`,
-        });
+        await addTransaction({ id: Date.now().toString(), type: 'Income', amount: goal.savedAmount, category: 'From Saving', date: new Date(), note: `Stopped goal: ${goal.name}` });
       }
       await updateGoal({ ...goal, stopped: true, savedAmount: 0 });
     } else if (!stopped && goal.stopped) {
@@ -111,80 +92,105 @@ export default function Goals() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      {/* Title */}
-      <Text style={{ color: theme.headline, fontWeight: 'bold', fontSize: 24, paddingHorizontal: 16, paddingTop: 16 }}>
-        {t('myGoal')}
-      </Text>
-
-      {/* Tab Bar */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 4 }}>
-        {(['active', 'done'] as const).map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            onPress={() => setActiveTab(tab)}
-            style={{
-              flex: 1, paddingVertical: 10, alignItems: 'center',
-              borderBottomWidth: activeTab === tab ? 3 : 1,
-              borderBottomColor: activeTab === tab ? theme.primary : `${theme.primaryText}33`,
-            }}
-          >
-            <Text style={{
-              color: activeTab === tab ? theme.primary : theme.primaryText,
-              fontWeight: activeTab === tab ? 'bold' : '400',
-              fontSize: 14,
-            }}>
-              {tab === 'active' ? t('activeGoals') : t('doneOrStoppedGoals')}
+      <FlatList
+        data={displayedGoals}
+        keyExtractor={(item) => item.id}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingBottom: insets.bottom + 80,
+        }}
+        ListHeaderComponent={
+          <View style={{ paddingTop: insets.top + spacing.md }}>
+            <Text style={{ color: theme.headline, ...typography.display, marginBottom: spacing.xl }}>
+              {t('myGoals')}
             </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
 
-      {goals.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <MaterialIcons name="flag" size={60} color={`${theme.primaryText}33`} />
-          <Text style={{ color: theme.primaryText, fontSize: 16, fontWeight: '500', marginTop: 16, textAlign: 'center', paddingHorizontal: 32 }}>
-            {t('noGoalsYet')}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={displayedGoals}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
-          ListEmptyComponent={
-            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-              <Text style={{ color: theme.primaryText, fontSize: 15 }}>
-                {activeTab === 'active' ? t('noGoalsYet') : 'No completed or stopped goals.'}
+            {/* Segmented tab */}
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: theme.card,
+                borderRadius: radius.lg,
+                padding: spacing.xs,
+                marginBottom: spacing.lg,
+              }}
+            >
+              {(['active', 'done'] as const).map((tab) => {
+                const active = activeTab === tab;
+                return (
+                  <Pressable
+                    key={tab}
+                    onPress={() => setActiveTab(tab)}
+                    style={{
+                      flex: 1,
+                      paddingVertical: spacing.sm,
+                      alignItems: 'center',
+                      borderRadius: radius.md,
+                      backgroundColor: active ? theme.background : 'transparent',
+                      boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : undefined,
+                    }}
+                  >
+                    <Text style={{
+                      color: active ? theme.primary : withAlpha(theme.primaryText, 0.55),
+                      ...typography.label,
+                    }}>
+                      {tab === 'active' ? t('activeGoals') : t('doneOrStoppedGoals')}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          goals.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+              <MaterialIcons name="flag" size={64} color={withAlpha(theme.primaryText, 0.2)} />
+              <Text style={{ color: theme.primaryText, ...typography.body, marginTop: spacing.md, opacity: 0.6, textAlign: 'center', paddingHorizontal: spacing.xxxl }}>
+                {t('noGoalsYet')}
               </Text>
             </View>
-          }
-          renderItem={({ item }) => (
-            <GoalCard
-              goal={item}
-              completed={item.savedAmount >= item.targetAmount}
-              currency={currency}
-              onEdit={() => setEditGoal(item)}
-              onDelete={() => handleDeleteGoal(item)}
-              onStopChanged={activeTab === 'active' ? (stopped) => handleStopGoal(item, stopped) : undefined}
-              onReactivate={
-                activeTab === 'done' && item.stopped && item.savedAmount < item.targetAmount
-                  ? () => handleReactivate(item)
-                  : undefined
-              }
-            />
-          )}
-        />
-      )}
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+              <Text style={{ color: withAlpha(theme.primaryText, 0.55), ...typography.body }}>
+                {activeTab === 'active' ? t('noGoalsYet') : t('completedGoals')}
+              </Text>
+            </View>
+          )
+        }
+        renderItem={({ item }) => (
+          <GoalCard
+            goal={item}
+            completed={item.savedAmount >= item.targetAmount}
+            currency={currency}
+            onEdit={() => setEditGoal(item)}
+            onDelete={() => handleDeleteGoal(item)}
+            onStopChanged={activeTab === 'active' ? (stopped) => handleStopGoal(item, stopped) : undefined}
+            onReactivate={
+              activeTab === 'done' && item.stopped && item.savedAmount < item.targetAmount
+                ? () => handleReactivate(item)
+                : undefined
+            }
+          />
+        )}
+      />
 
       {/* FAB */}
       <TouchableOpacity
         onPress={() => setAddGoalVisible(true)}
+        activeOpacity={0.85}
         style={{
-          position: 'absolute', bottom: 24, right: 24,
-          width: 56, height: 56, borderRadius: 28, backgroundColor: theme.primary,
-          justifyContent: 'center', alignItems: 'center',
-          shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4, shadowRadius: 8, elevation: 6,
+          position: 'absolute',
+          bottom: insets.bottom + spacing.xl,
+          right: spacing.xl,
+          width: 56,
+          height: 56,
+          borderRadius: radius.pill,
+          backgroundColor: theme.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          boxShadow: '0 6px 20px rgba(0, 184, 217, 0.40)',
         }}
       >
         <MaterialIcons name="add" size={28} color="#fff" />

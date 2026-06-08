@@ -1,6 +1,7 @@
 import AddTransactionModal from '@/components/modals/AddTransactionModal';
 import EditTransactionModal from '@/components/modals/EditTransactionModal';
 import TransactionTile from '@/components/TransactionTile';
+import { radius, spacing, typography, withAlpha } from '@/contants/theme';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Transaction } from '@/model/Transaction';
 import {
@@ -16,11 +17,13 @@ import { useTranslation } from 'react-i18next';
 import {
     Alert,
     FlatList,
+    Pressable,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const FILTER_TYPES = ['All', 'Income', 'Expense'] as const;
 type FilterType = (typeof FILTER_TYPES)[number];
@@ -28,6 +31,7 @@ type FilterType = (typeof FILTER_TYPES)[number];
 function Transactions() {
   const theme = useAppTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currency, setCurrencySymbol] = useState('$');
@@ -68,7 +72,7 @@ function Transactions() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(t('deleteConfirmTitle'), 'Are you sure you want to delete this transaction?', [
+    Alert.alert(t('deleteConfirmTitle'), t('deleteConfirmContent'), [
       { text: t('cancel'), style: 'cancel' },
       {
         text: t('delete'),
@@ -83,66 +87,79 @@ function Transactions() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      {/* Title */}
-      <Text style={{ color: theme.headline, fontWeight: 'bold', fontSize: 24, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-        {t('transactions')}
-      </Text>
-
-      {/* Search Bar */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-        <View style={{
-          flexDirection: 'row', alignItems: 'center',
-          backgroundColor: theme.card, borderRadius: 12,
-          paddingHorizontal: 12, paddingVertical: 8,
-        }}>
-          <MaterialIcons name="search" size={20} color={`${theme.primaryText}66`} style={{ marginRight: 8 }} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={t('searchTransaction')}
-            placeholderTextColor={`${theme.primaryText}66`}
-            style={{ flex: 1, color: theme.primaryText, fontSize: 15 }}
-          />
-          {searchQuery ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <MaterialIcons name="close" size={18} color={`${theme.primaryText}66`} />
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-
-      {/* Filter Chips */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 8 }}>
-        {FILTER_TYPES.map((tp) => (
-          <TouchableOpacity
-            key={tp}
-            onPress={() => setSelectedType(tp)}
-            style={{
-              paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20,
-              backgroundColor: selectedType === tp ? theme.primary : theme.card,
-              borderWidth: 1.5,
-              borderColor: selectedType === tp ? theme.primary : `${theme.primaryText}22`,
-            }}
-          >
-            <Text style={{
-              color: selectedType === tp ? '#fff' : theme.primaryText,
-              fontWeight: '600', fontSize: 13,
-            }}>
-              {tp === 'All' ? t('all') : tp === 'Income' ? t('income') : t('expense')}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Transaction List */}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingBottom: insets.bottom + 80,
+          gap: 0,
+        }}
+        ListHeaderComponent={
+          <View style={{ paddingTop: insets.top + spacing.md }}>
+            {/* Page title */}
+            <Text style={{ color: theme.headline, ...typography.display, marginBottom: spacing.xl }}>
+              {t('transactions')}
+            </Text>
+
+            {/* Search bar */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.card,
+                borderRadius: radius.md,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
+                marginBottom: spacing.sm,
+              }}
+            >
+              <MaterialIcons name="search" size={20} color={withAlpha(theme.primaryText, 0.45)} style={{ marginRight: spacing.sm }} />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('searchTransaction')}
+                placeholderTextColor={withAlpha(theme.primaryText, 0.4)}
+                style={{ flex: 1, color: theme.primaryText, ...typography.body }}
+              />
+              {searchQuery ? (
+                <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
+                  <MaterialIcons name="close" size={18} color={withAlpha(theme.primaryText, 0.45)} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {/* Filter chips */}
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
+              {FILTER_TYPES.map((tp) => {
+                const active = selectedType === tp;
+                return (
+                  <Pressable
+                    key={tp}
+                    onPress={() => setSelectedType(tp)}
+                    style={{
+                      paddingHorizontal: spacing.lg,
+                      paddingVertical: spacing.sm,
+                      borderRadius: radius.pill,
+                      backgroundColor: active ? theme.primary : theme.card,
+                      borderWidth: 1.5,
+                      borderColor: active ? theme.primary : withAlpha(theme.primaryText, 0.12),
+                    }}
+                  >
+                    <Text style={{ color: active ? '#fff' : theme.primaryText, ...typography.label }}>
+                      {tp === 'All' ? t('all') : tp === 'Income' ? t('income') : t('expense')}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        }
         ListEmptyComponent={
           <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-            <MaterialIcons name="receipt-long" size={64} color={`${theme.primaryText}33`} />
-            <Text style={{ color: theme.primaryText, fontSize: 16, marginTop: 12 }}>
+            <MaterialIcons name="receipt-long" size={64} color={withAlpha(theme.primaryText, 0.2)} />
+            <Text style={{ color: theme.primaryText, ...typography.body, marginTop: spacing.md, opacity: 0.6 }}>
               {t('noTransactions')}
             </Text>
           </View>
@@ -150,21 +167,20 @@ function Transactions() {
         renderItem={({ item }) => (
           <View>
             <TransactionTile transaction={item} currency={currency} />
-            {/* Edit / Delete row */}
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm, marginBottom: spacing.xs }}>
               <TouchableOpacity
                 onPress={() => setEditTransaction(item)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.md, paddingVertical: spacing.xs }}
               >
-                <MaterialIcons name="edit" size={16} color={theme.primary} />
-                <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '600' }}>Edit</Text>
+                <MaterialIcons name="edit" size={15} color={theme.primary} />
+                <Text style={{ color: theme.primary, ...typography.caption, fontWeight: '600' }}>{t('editTransaction')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDelete(item.id)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 4 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.md, paddingVertical: spacing.xs }}
               >
-                <MaterialIcons name="delete" size={16} color={theme.error} />
-                <Text style={{ color: theme.error, fontSize: 12, fontWeight: '600' }}>Delete</Text>
+                <MaterialIcons name="delete-outline" size={15} color={theme.error} />
+                <Text style={{ color: theme.error, ...typography.caption, fontWeight: '600' }}>{t('delete')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -174,12 +190,18 @@ function Transactions() {
       {/* FAB */}
       <TouchableOpacity
         onPress={() => setAddVisible(true)}
+        activeOpacity={0.85}
         style={{
-          position: 'absolute', bottom: 24, right: 24,
-          width: 56, height: 56, borderRadius: 28, backgroundColor: theme.primary,
-          justifyContent: 'center', alignItems: 'center',
-          shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4, shadowRadius: 8, elevation: 6,
+          position: 'absolute',
+          bottom: insets.bottom + spacing.xl,
+          right: spacing.xl,
+          width: 56,
+          height: 56,
+          borderRadius: radius.pill,
+          backgroundColor: theme.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          boxShadow: '0 6px 20px rgba(0, 184, 217, 0.40)',
         }}
       >
         <MaterialIcons name="add" size={28} color="#fff" />
